@@ -12,6 +12,7 @@ COPY go.mod go.sum /go/src/${PROJECT_NAME}/
 RUN go mod download
 COPY cmd /go/src/${PROJECT_NAME}/cmd
 COPY pkg /go/src/${PROJECT_NAME}/pkg
+COPY internal /go/src/${PROJECT_NAME}/internal
 RUN cd cmd && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /build/${PROJECT_NAME}
 
 ## awscli + app
