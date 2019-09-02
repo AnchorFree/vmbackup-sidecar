@@ -9,14 +9,13 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/backup", handlers.BackupHandler)
-	listenPort := "8488"
-	fmt.Printf(";;; Listening port %s\n", listenPort)
-	log.Fatal(http.ListenAndServe(":"+listenPort, nil))
-
 	// TODO: implement /metrics
 	// http.HandleFunc("/metrics", metricsHandler)
 
-	// TODO: implement /health
-	// http.HandleFunc("/health", healthHandler)
+	http.HandleFunc("/health", handlers.HealthcheckHandler)
+	http.HandleFunc("/backup", handlers.BackupHandler)
+
+	listenPort := "8488"
+	fmt.Printf(";;; Listening port %s\n", listenPort)
+	log.Fatal(http.ListenAndServe(":"+listenPort, nil))
 }

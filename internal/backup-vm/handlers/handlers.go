@@ -63,6 +63,11 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 // 	fmt.Fprintf(w, ";;; call to /metrics")
 // }
 
-// func healthHandler(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Fprintf(w, ";;; call to /health")
-// }
+// HealthcheckHandler /health
+// just returns 200 '{ "ok": true }'
+func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := fmt.Fprintf(w, "{ \"ok\": true }"); err != nil {
+		fmt.Printf("Error in response writing: %#v", err)
+	}
+}
