@@ -1,6 +1,10 @@
 package vmstorage
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 type clientTestCase struct {
 	descr    string
@@ -33,20 +37,13 @@ var testCases = []clientTestCase{
 func TestNew(t *testing.T) {
 	for _, tCase := range testCases {
 		res := New(tCase.host, tCase.port, tCase.proto)
-		if *res != *tCase.expected {
-			t.Fatalf("FAIL: %s\nExpected: %+v\nActual: %+v", tCase.descr, tCase.expected, res)
-		}
-		t.Logf("PASS: %s", tCase.descr)
+		assert.Equal(t, tCase.expected, res, tCase.descr)
 	}
 }
 
 func TestComposeBasePath(t *testing.T) {
 	for _, tCase := range testCases {
-		c := New(tCase.host, tCase.port, tCase.proto)
-		res := c.ComposeBasePath()
-		if res != tCase.basePath {
-			t.Fatalf("FAIL: %s\nExpected: %+v\nActual: %+v", tCase.descr, tCase.basePath, res)
-		}
-		t.Logf("PASS: %s", tCase.descr)
+		res := New(tCase.host, tCase.port, tCase.proto).ComposeBasePath()
+		assert.Equal(t, tCase.basePath, res, tCase.descr)
 	}
 }

@@ -1,6 +1,10 @@
 package s3sync
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 type syncCmdTestCase struct {
 	bucketName string
@@ -38,9 +42,6 @@ func TestComposeCmd(t *testing.T) {
 			tCase.delete,
 			tCase.follow,
 		).ComposeCmd()
-		if res != tCase.expected {
-			t.Fatalf("FAIL: %s\nExpected: '%s'\nActual: '%s'", tCase.descr, tCase.expected, res)
-		}
-		t.Logf("PASS: %s", tCase.descr)
+		assert.Equal(t, tCase.expected, res, tCase.descr)
 	}
 }
