@@ -13,7 +13,7 @@ func main() {
 	// http.HandleFunc("/metrics", metricsHandler)
 
 	http.HandleFunc("/health", handlers.HealthcheckHandler)
-	http.HandleFunc("/backup", handlers.BackupHandler)
+	http.HandleFunc("/backup/create", handlers.BackupHandler)
 
 	listenPort := "8488"
 	fmt.Printf(";;; Listening port %s\n", listenPort)
