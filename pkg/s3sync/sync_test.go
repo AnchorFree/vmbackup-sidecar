@@ -39,7 +39,7 @@ func TestComposeCmd(t *testing.T) {
 			tCase.follow,
 		).ComposeCmd()
 		if res != tCase.expected {
-			t.Errorf("FAIL: %s\nExpected: '%s'\nActual: '%s'", tCase.descr, tCase.expected, res)
+			t.Fatalf("FAIL: %s\nExpected: '%s'\nActual: '%s'", tCase.descr, tCase.expected, res)
 		}
 		t.Logf("PASS: %s", tCase.descr)
 	}

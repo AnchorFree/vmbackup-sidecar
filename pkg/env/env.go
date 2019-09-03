@@ -6,6 +6,14 @@ import (
 	"strconv"
 )
 
+// Env vars to read
+var (
+	HostVarName     = "VMSTORAGE_HOST"
+	PortVarName     = "VMSTORAGE_PORT"
+	BucketVarName   = "VM_SNAPSHOT_BUCKET"
+	DataPathVarName = "VM_STORAGE_DATA_PATH"
+)
+
 type Config struct {
 	// vmstorage host and port
 	Host string
@@ -21,33 +29,28 @@ type Config struct {
 func GetConfig() (*Config, error) {
 	var s Config
 
-	hostVarName := "VMSTORAGE_HOST"
-	portVarName := "VMSTORAGE_PORT"
-	bucketVarName := "VM_SNAPSHOT_BUCKET"
-	dataPathVarName := "VM_STORAGE_DATA_PATH"
-
-	host := os.Getenv(hostVarName)
+	host := os.Getenv(HostVarName)
 	if host == "" {
-		return &s, fmt.Errorf("%s is not set", hostVarName)
+		return &s, fmt.Errorf("%s is not set", HostVarName)
 	}
 
-	port := os.Getenv(portVarName)
-	if host == "" {
-		return &s, fmt.Errorf("%s is not set", portVarName)
+	port := os.Getenv(PortVarName)
+	if port == "" {
+		return &s, fmt.Errorf("%s is not set", PortVarName)
 	}
 	p, err := strconv.ParseUint(port, 10, 16)
 	if err != nil {
 		return &s, err
 	}
 
-	bucket := os.Getenv(bucketVarName)
-	if host == "" {
-		return &s, fmt.Errorf("%s is not set", bucketVarName)
+	bucket := os.Getenv(BucketVarName)
+	if bucket == "" {
+		return &s, fmt.Errorf("%s is not set", BucketVarName)
 	}
 
-	dataPath := os.Getenv(dataPathVarName)
-	if host == "" {
-		return &s, fmt.Errorf("%s is not set", dataPathVarName)
+	dataPath := os.Getenv(DataPathVarName)
+	if dataPath == "" {
+		return &s, fmt.Errorf("%s is not set", DataPathVarName)
 	}
 
 	s = Config{
