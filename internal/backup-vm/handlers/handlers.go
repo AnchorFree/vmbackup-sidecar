@@ -43,7 +43,6 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		syncer := s3sync.New(
 			bucketPath,
 			snapPath,
-			conf.Profile,
 			delete,
 			follow,
 		)
