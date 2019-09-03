@@ -24,14 +24,14 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Create snapshot
-		fmt.Fprintf(w, "Creating snapshot")
+		fmt.Fprintln(w, "Creating snapshot")
 		client := vmstorage.New(conf.Host, conf.Port, "http")
 		resp := client.CreateSnapshot()
 		if resp.Status != "ok" {
 			fmt.Printf("Error: %s: /snapshot/create status not 'ok'\n", resp.Status)
 			os.Exit(1)
 		}
-		fmt.Fprintf(w, "Snapshot '%s' created", resp.SnapName)
+		fmt.Fprintf(w, "Snapshot '%s' created\n", resp.SnapName)
 
 		// Sync snapshot with S3
 		snapPath := path.Join(conf.DataPath, "snapshots", resp.SnapName)
@@ -39,7 +39,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		delete := true
 		follow := true
 
-		fmt.Fprintf(w, "Sync snapshot %s into %s", resp.SnapName, bucketPath)
+		fmt.Fprintf(w, "Sync snapshot %s into %s\n", resp.SnapName, bucketPath)
 		syncer := s3sync.New(
 			bucketPath,
 			snapPath,
@@ -52,9 +52,10 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 			os.Exit(1)
 		}
 		fmt.Println(string(out))
+		fmt.Fprintln(w, "Sync completed")
 
 	default:
-		fmt.Fprintf(w, "Error: only PUT method is supported")
+		fmt.Fprintln(w, "Error: only PUT method is supported")
 	}
 }
 
