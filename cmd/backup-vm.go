@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/AnchorFree/vmbackup-sidecar/internal/backup-vm/cfg"
 	"github.com/AnchorFree/vmbackup-sidecar/internal/backup-vm/handlers"
@@ -22,12 +22,14 @@ var (
 )
 
 func main() {
+	listen := ":" + strconv.Itoa(cfg.Cfg.Port)
 	logger.Infow(
 		"starting "+os.Args[0],
 		"version", version,
 		"buildtime", builddt,
 		"semver", semver,
 		"branch", branch,
+		"listen", listen,
 	)
 	// TODO: implement /metrics
 	// http.HandleFunc("/metrics", metricsHandler)
@@ -35,7 +37,5 @@ func main() {
 	http.HandleFunc("/health", handlers.HealthcheckHandler)
 	http.HandleFunc("/backup/create", handlers.BackupHandler)
 
-	listenPort := "8488"
-	fmt.Printf(";;; Listening port %s\n", listenPort)
-	log.Fatal(http.ListenAndServe(":"+listenPort, nil))
+	log.Fatal(http.ListenAndServe(listen, nil))
 }

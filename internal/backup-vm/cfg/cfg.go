@@ -1,6 +1,7 @@
 package cfg
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -10,9 +11,7 @@ import (
 type config struct {
 	Logger     *zap.SugaredLogger
 	FastLogger *zap.Logger
-	// LogLevel   string
-	// Listen     string
-	// Port       int
+	Port       int
 }
 
 var Cfg config
@@ -29,4 +28,16 @@ func init() {
 
 	Cfg.Logger = sugar
 	Cfg.FastLogger = logger
+
+	// Args from cmd
+	port := flag.Int("port", 8488, "Port to listen")
+	help := flag.Bool("help", false, "Show usage")
+	flag.Parse()
+
+	if *help {
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+
+	Cfg.Port = *port
 }
