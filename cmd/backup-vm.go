@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/AnchorFree/vmbackup-sidecar/internal/backup-vm/cfg"
 	"github.com/AnchorFree/vmbackup-sidecar/internal/backup-vm/handlers"
+	"go.uber.org/zap"
 )
 
 // version and semver get overwritten by build with
@@ -20,6 +22,17 @@ var (
 	logger  = cfg.Cfg.Logger
 	fastlog = cfg.Cfg.FastLogger
 )
+
+// fwdToZapWriter allows us to use the zap.Logger as our http.Server ErrorLog
+// see https://stackoverflow.com/questions/52294334/net-http-set-custom-logger
+type fwdToZapWriter struct {
+	logger *zap.Logger
+}
+
+func (fw *fwdToZapWriter) Write(p []byte) (n int, err error) {
+	fw.logger.Error(string(p))
+	return len(p), nil
+}
 
 func main() {
 	listen := ":" + strconv.Itoa(cfg.Cfg.Port)
@@ -37,5 +50,12 @@ func main() {
 	http.HandleFunc("/health", handlers.HealthcheckHandler)
 	http.HandleFunc("/backup/create", handlers.BackupHandler)
 
-	log.Fatal(http.ListenAndServe(listen, nil))
+	srv := &http.Server{
+		Addr: listen,
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+		ErrorLog:     log.New(&fwdToZapWriter{fastlog}, "", 0),
+	}
+	log.Fatal(srv.ListenAndServe())
 }
