@@ -5,20 +5,24 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/AnchorFree/vmbackup-sidecar/internal/backup-vm/cfg"
 	"github.com/AnchorFree/vmbackup-sidecar/pkg/env"
 	"github.com/AnchorFree/vmbackup-sidecar/pkg/s3sync"
 	"github.com/AnchorFree/vmbackup-sidecar/pkg/vmstorage"
 )
 
+var log = cfg.Cfg.Logger
+
 func BackupHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, ";;; call to /backup/create\n")
+	pattern := "/backup/create"
+	log.Infof("Call to %s", pattern)
 
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "application/json")
-		errMsg := fmt.Sprintf("Incorrect HTTP method for uri [/backup/create] and method [%s], allowed: [GET]", r.Method)
+		errMsg := fmt.Sprintf("Incorrect HTTP method for uri [%s] and method [%s], allowed: [GET]", pattern, r.Method)
 		_, err := fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": 405 }", errMsg)
 		if err != nil {
-			fmt.Printf("Error in response writing: %#v", err)
+			log.Errorw("response writing error", "error", err)
 		}
 		return
 	}
@@ -26,7 +30,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	// Read ENV vars
 	conf, err := env.GetConfig()
 	if err != nil {
-		fmt.Printf("Error: %s\n", err)
+		log.Errorw("error parsing config from env", "error", err)
 		return
 	}
 
@@ -35,7 +39,13 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	client := vmstorage.New(conf.Host, conf.Port, "http")
 	resp := client.CreateSnapshot()
 	if resp.Status != "ok" {
-		fmt.Printf("Error: %s: /snapshot/create status not 'ok'\n", resp.Status)
+		errMsg := fmt.Sprintf(
+			"vmstorage %s response status not 'ok'",
+			vmstorage.SnapshotCreatePath,
+		)
+		log.Errorw(errMsg, "status", resp.Status)
+		fmt.Fprintf(w, "failed to create snapshot: %s\nresponse status '%s'\n",
+			vmstorage.SnapshotCreatePath, resp.Status)
 		return
 	}
 	fmt.Fprintf(w, "Snapshot '%s' created\n", resp.SnapName)
@@ -47,18 +57,14 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	follow := true
 
 	fmt.Fprintf(w, "Sync snapshot %s into %s\n", resp.SnapName, bucketPath)
-	syncer := s3sync.New(
-		bucketPath,
-		snapPath,
-		delete,
-		follow,
-	)
+	syncer := s3sync.New(bucketPath, snapPath, delete, follow)
 	out, err := syncer.Run()
 	if err != nil {
-		fmt.Println(err)
+		log.Errorw("error syncing snapshot with s3", "error", err)
+		fmt.Fprintln(w, "failed to sync snapshot with s3")
 		return
 	}
-	fmt.Println(string(out))
+	log.Info(string(out))
 	fmt.Fprintln(w, "Sync completed")
 }
 
