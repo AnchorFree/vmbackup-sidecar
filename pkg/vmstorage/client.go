@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+// SnapshotCreatePath defines vmstorage endpoint to create instant snapshot
+// https://github.com/VictoriaMetrics/VictoriaMetrics/wiki/Cluster-VictoriaMetrics#url-format
+var SnapshotCreatePath = "/snapshot/create"
+
 type SnapClient struct {
 	proto string // default: "http"
 	host  string
@@ -27,7 +31,7 @@ func New(host string, port uint16, proto string) *SnapClient {
 }
 
 func (c *SnapClient) CreateSnapshot() *SnapResponse {
-	resp, err := http.Get(c.ComposeBasePath() + "/snapshot/create")
+	resp, err := http.Get(c.ComposeBasePath() + SnapshotCreatePath)
 	if err != nil {
 		panic(err)
 	}
