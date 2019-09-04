@@ -14,7 +14,12 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, ";;; call to /backup/create\n")
 
 	if r.Method != "GET" {
-		fmt.Fprintln(w, "Error: only GET method is supported")
+		w.Header().Set("Content-Type", "application/json")
+		errMsg := fmt.Sprintf("Incorrect HTTP method for uri [/backup/create] and method [%s], allowed: [GET]", r.Method)
+		_, err := fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": 405 }", errMsg)
+		if err != nil {
+			fmt.Printf("Error in response writing: %#v", err)
+		}
 		return
 	}
 
