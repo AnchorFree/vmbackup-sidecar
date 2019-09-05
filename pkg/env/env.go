@@ -12,6 +12,7 @@ var (
 	PortVarName     = "VMSTORAGE_PORT"
 	BucketVarName   = "VM_SNAPSHOT_BUCKET"
 	DataPathVarName = "VM_STORAGE_DATA_PATH"
+	PodVarName      = "HOSTNAME"
 )
 
 type Config struct {
@@ -24,6 +25,9 @@ type Config struct {
 
 	// Correspondes to --storageDataPath flag in VictoriaMetrics setup
 	DataPath string
+
+	// Pod name of vmstorage component
+	PodName string
 }
 
 func GetConfig() (*Config, error) {
@@ -53,11 +57,17 @@ func GetConfig() (*Config, error) {
 		return &s, fmt.Errorf("%s is not set", DataPathVarName)
 	}
 
+	podName := os.Getenv(PodVarName)
+	if podName == "" {
+		return &s, fmt.Errorf("%s is not set", PodVarName)
+	}
+
 	s = Config{
 		Host:       host,
 		Port:       uint16(p),
 		BucketName: bucket,
 		DataPath:   dataPath,
+		PodName:    podName,
 	}
 
 	return &s, nil

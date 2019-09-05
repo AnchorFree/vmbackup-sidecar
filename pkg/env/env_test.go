@@ -15,6 +15,7 @@ type envTestCase struct {
 	port        string
 	bucketName  string
 	dataPath    string
+	podName     string
 	errExpected bool
 }
 
@@ -25,6 +26,7 @@ var testCases = []envTestCase{
 		port:        "4242",
 		bucketName:  "foo-bucket",
 		dataPath:    "/foo/data",
+		podName:     "victoria-metrics-vmstorage-0",
 		errExpected: false,
 	},
 	{
@@ -33,6 +35,7 @@ var testCases = []envTestCase{
 		port:        "4242",
 		bucketName:  "foo-bucket",
 		dataPath:    "/foo/data",
+		podName:     "victoria-metrics-vmstorage-0",
 		errExpected: true,
 	},
 	{
@@ -41,6 +44,7 @@ var testCases = []envTestCase{
 		port:        "",
 		bucketName:  "foo-bucket",
 		dataPath:    "/foo/data",
+		podName:     "victoria-metrics-vmstorage-0",
 		errExpected: true,
 	},
 	{
@@ -49,6 +53,7 @@ var testCases = []envTestCase{
 		port:        "4242",
 		bucketName:  "",
 		dataPath:    "/foo/data",
+		podName:     "victoria-metrics-vmstorage-0",
 		errExpected: true,
 	},
 	{
@@ -57,6 +62,16 @@ var testCases = []envTestCase{
 		port:        "4242",
 		bucketName:  "foo-bucket",
 		dataPath:    "",
+		podName:     "victoria-metrics-vmstorage-0",
+		errExpected: true,
+	},
+	{
+		descr:       fmt.Sprintf("%s is not set; error", PodVarName),
+		host:        "localhost",
+		port:        "4242",
+		bucketName:  "foo-bucket",
+		dataPath:    "/foo/data",
+		podName:     "",
 		errExpected: true,
 	},
 }
@@ -73,6 +88,7 @@ func (s envTestCase) getExpectedCfg() *Config {
 			Port:       uint16(p),
 			BucketName: s.bucketName,
 			DataPath:   s.dataPath,
+			PodName:    s.podName,
 		}
 	}
 	return &c
@@ -85,6 +101,7 @@ func TestGetConfig(t *testing.T) {
 		os.Setenv(PortVarName, tCase.port)
 		os.Setenv(BucketVarName, tCase.bucketName)
 		os.Setenv(DataPathVarName, tCase.dataPath)
+		os.Setenv(PodVarName, tCase.podName)
 
 		// Actual test
 		res, err := GetConfig()

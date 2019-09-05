@@ -52,7 +52,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Sync snapshot with S3
 	snapPath := path.Join(conf.DataPath, "snapshots", resp.SnapName)
-	bucketPath := path.Join(conf.BucketName, conf.Host)
+	bucketPath := path.Join(conf.BucketName, conf.PodName)
 	delete := true
 	follow := true
 
