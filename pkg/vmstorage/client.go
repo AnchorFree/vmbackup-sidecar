@@ -7,9 +7,15 @@ import (
 	"net/http"
 )
 
-// SnapshotCreatePath defines vmstorage endpoint to create instant snapshot
-// https://github.com/VictoriaMetrics/VictoriaMetrics/wiki/Cluster-VictoriaMetrics#url-format
-var SnapshotCreatePath = "/snapshot/create"
+var (
+	// https://github.com/VictoriaMetrics/VictoriaMetrics/wiki/Cluster-VictoriaMetrics#url-format
+
+	// SnapshotCreatePath defines vmstorage endpoint to create instant snapshot
+	SnapshotCreatePath = "/snapshot/create"
+
+	// SnapshotDeleteAll defines vmstorage endpoint to delete all snapshots
+	SnapshotDeleteAll = "/snapshot/delete_all"
+)
 
 type SnapClient struct {
 	proto string // default: "http"
@@ -30,24 +36,32 @@ func New(host string, port uint16, proto string) *SnapClient {
 	return &SnapClient{host: host, port: port, proto: proto}
 }
 
-func (c *SnapClient) CreateSnapshot() *SnapResponse {
-	resp, err := http.Get(c.ComposeBasePath() + SnapshotCreatePath)
+func (c SnapClient) CreateSnapshot() (*SnapResponse, error) {
+	return c.makeApiRequest(SnapshotCreatePath)
+}
+
+func (c SnapClient) DeleteAllSnaps() (*SnapResponse, error) {
+	return c.makeApiRequest(SnapshotDeleteAll)
+}
+
+func (c SnapClient) ComposeBasePath() string {
+	return fmt.Sprintf("%s://%s:%d", c.proto, c.host, c.port)
+}
+
+func (c SnapClient) makeApiRequest(path string) (*SnapResponse, error) {
+	var r SnapResponse
+
+	resp, err := http.Get(c.ComposeBasePath() + path)
 	if err != nil {
-		panic(err)
+		return &r, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return &r, err
 	}
 
-	r := SnapResponse{}
 	json.Unmarshal(body, &r)
-
-	return &r
-}
-
-func (c SnapClient) ComposeBasePath() string {
-	return fmt.Sprintf("%s://%s:%d", c.proto, c.host, c.port)
+	return &r, nil
 }

@@ -38,25 +38,31 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	// Create snapshot
 	fmt.Fprintln(w, "Creating snapshot")
 	client := vmstorage.New(conf.Host, conf.Port, "http")
-	resp := client.CreateSnapshot()
-	if resp.Status != "ok" {
+	createResp, err := client.CreateSnapshot()
+	if err != nil {
+		errMsg := "error creating vmstorage snapshot"
+		log.Errorw(errMsg, "error", err)
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		return
+	}
+	if createResp.Status != "ok" {
 		errMsg := fmt.Sprintf(
 			"vmstorage %s response status not 'ok'",
 			vmstorage.SnapshotCreatePath,
 		)
-		log.Errorw(errMsg, "status", resp.Status)
+		log.Errorw(errMsg, "status", createResp.Status)
 		http.Error(w, "failed to create snapshot", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "Snapshot '%s' created\n", resp.SnapName)
+	fmt.Fprintf(w, "Snapshot '%s' created\n", createResp.SnapName)
 
 	// Sync snapshot with S3
-	snapPath := path.Join(conf.DataPath, "snapshots", resp.SnapName)
+	snapPath := path.Join(conf.DataPath, "snapshots", createResp.SnapName)
 	bucketPath := path.Join(conf.BucketName, conf.PodName)
 	delete := true
 	follow := true
 
-	fmt.Fprintf(w, "Sync snapshot %s into %s\n", resp.SnapName, bucketPath)
+	fmt.Fprintf(w, "Sync snapshot %s into %s\n", createResp.SnapName, bucketPath)
 	syncer := s3sync.New(bucketPath, snapPath, delete, follow)
 	out, err := syncer.Run()
 	if err != nil {
@@ -66,6 +72,25 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info(string(out))
 	fmt.Fprintln(w, "Sync completed")
+
+	// Remove all snapshots
+	fmt.Fprintln(w, "Removing all snapshots")
+	delAllResp, err := client.DeleteAllSnaps()
+	if err != nil {
+		errMsg := "error removing vmstorage snapshots"
+		log.Errorw(errMsg, "error", err)
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		return
+	}
+	if delAllResp.Status != "ok" {
+		errMsg := fmt.Sprintf(
+			"vmstorage %s response status not 'ok'",
+			vmstorage.SnapshotDeleteAll,
+		)
+		log.Errorw(errMsg, "status", delAllResp.Status)
+		http.Error(w, "failed to remove snapshots", http.StatusInternalServerError)
+		return
+	}
 }
 
 // func metricsHandler(w http.ResponseWriter, r *http.Request) {
