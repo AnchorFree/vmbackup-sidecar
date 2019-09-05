@@ -30,7 +30,9 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	// Read ENV vars
 	conf, err := env.GetConfig()
 	if err != nil {
-		log.Errorw("error parsing config from env", "error", err)
+		errMsg := "error parsing config from env"
+		log.Errorw(errMsg, "error", err)
+		fmt.Fprintln(w, errMsg)
 		return
 	}
 
