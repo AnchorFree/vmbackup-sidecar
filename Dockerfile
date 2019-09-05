@@ -8,12 +8,14 @@ ENV PROJECT_NAME vmbackup-sidecar
 RUN apk --no-cache add git
 
 WORKDIR /go/src/${PROJECT_NAME}
-COPY go.mod go.sum /go/src/${PROJECT_NAME}/
+COPY . .
 RUN go mod download
-COPY cmd /go/src/${PROJECT_NAME}/cmd
-COPY pkg /go/src/${PROJECT_NAME}/pkg
-COPY internal /go/src/${PROJECT_NAME}/internal
-RUN cd cmd && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /build/${PROJECT_NAME}
+RUN VERSION=$(git describe --always --long) && \
+    DT=$(date -u +"%Y-%m-%dT%H:%M:%SZ") && \
+    SEMVER=$(git tag --list --sort="v:refname" | tail -n -1) && \
+    BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
+    cd cmd && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s -X main.version=${VERSION} -X main.builddt=${DT} -X main.semver=${SEMVER} -X main.branch=${BRANCH}" -o /build/${PROJECT_NAME}
 
 ## awscli + app
 ##
