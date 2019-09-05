@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 
 	"github.com/AnchorFree/vmbackup-sidecar/internal/backup-vm/cfg"
@@ -11,7 +12,25 @@ import (
 	"github.com/AnchorFree/vmbackup-sidecar/pkg/vmstorage"
 )
 
-var log = cfg.Cfg.Logger
+var (
+	log             = cfg.Cfg.Logger
+	envConf, envErr = env.GetConfig()
+)
+
+func init() {
+	if envErr != nil {
+		log.Errorw("error parsing envConfig from env", "error", envErr)
+		os.Exit(1)
+	}
+	log.Infow(
+		"configuration from env",
+		env.HostVarName, envConf.Host,
+		env.PortVarName, envConf.Port,
+		env.BucketVarName, envConf.BucketName,
+		env.DataPathVarName, envConf.DataPath,
+		env.PodVarName, envConf.PodName,
+	)
+}
 
 func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	pattern := "/backup/create"
@@ -26,18 +45,9 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Read ENV vars
-	conf, err := env.GetConfig()
-	if err != nil {
-		errMsg := "error parsing config from env"
-		log.Errorw(errMsg, "error", err)
-		http.Error(w, errMsg, http.StatusInternalServerError)
-		return
-	}
-
 	// Create snapshot
 	fmt.Fprintln(w, "Creating snapshot")
-	client := vmstorage.New(conf.Host, conf.Port, "http")
+	client := vmstorage.New(envConf.Host, envConf.Port, "http")
 	createResp, err := client.CreateSnapshot()
 	if err != nil {
 		errMsg := "error creating vmstorage snapshot"
@@ -57,8 +67,8 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Snapshot '%s' created\n", createResp.SnapName)
 
 	// Sync snapshot with S3
-	snapPath := path.Join(conf.DataPath, "snapshots", createResp.SnapName)
-	bucketPath := path.Join(conf.BucketName, conf.PodName)
+	snapPath := path.Join(envConf.DataPath, "snapshots", createResp.SnapName)
+	bucketPath := path.Join(envConf.BucketName, envConf.PodName)
 	delete := true
 	follow := true
 

@@ -8,13 +8,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// Cfg stores loggers and port data
+var Cfg config
+
 type config struct {
 	Logger     *zap.SugaredLogger
 	FastLogger *zap.Logger
 	Port       int
 }
-
-var Cfg config
 
 func init() {
 	// Setup logger(s)
