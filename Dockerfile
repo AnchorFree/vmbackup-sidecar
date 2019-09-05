@@ -1,6 +1,6 @@
 ## binarybuild
 ##
-FROM golang:1.12.9-alpine3.10 as binarybuilder
+FROM golang:1.13.0-alpine3.10 as binarybuilder
 
 ENV GO111MODULE on
 ENV PROJECT_NAME vmbackup-sidecar
@@ -18,7 +18,7 @@ RUN cd cmd && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o
 ## awscli + app
 ##
 FROM python:3.7-alpine3.10
-RUN pip install --no-cache-dir awscli==1.16.229
+RUN pip install --no-cache-dir awscli==1.16.232
 
 # vmbackup app
 ENV BINARY vmbackup-sidecar
