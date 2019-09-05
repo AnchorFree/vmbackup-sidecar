@@ -46,8 +46,6 @@ func (sc SyncCmd) Run() ([]byte, error) {
 	var out []byte
 
 	cmd := sc.ComposeCmd()
-	fmt.Printf(";;; cmd: '%s'\n", cmd)
-
 	tokens, err := shlex.Split(cmd)
 	if err != nil {
 		return out, err
