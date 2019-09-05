@@ -20,10 +20,9 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "application/json")
 		errMsg := fmt.Sprintf("Incorrect HTTP method for uri [%s] and method [%s], allowed: [GET]", pattern, r.Method)
-		_, err := fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": 405 }", errMsg)
-		if err != nil {
-			log.Errorw("response writing error", "error", err)
-		}
+		errFull := fmt.Sprintf("{ \"error\": \"%s\", \"status\": 405 }", errMsg)
+		log.Error(errMsg)
+		http.Error(w, errFull, http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -32,7 +31,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errMsg := "error parsing config from env"
 		log.Errorw(errMsg, "error", err)
-		fmt.Fprintln(w, errMsg)
+		http.Error(w, errMsg, http.StatusInternalServerError)
 		return
 	}
 
@@ -46,8 +45,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 			vmstorage.SnapshotCreatePath,
 		)
 		log.Errorw(errMsg, "status", resp.Status)
-		fmt.Fprintf(w, "failed to create snapshot: %s\nresponse status '%s'\n",
-			vmstorage.SnapshotCreatePath, resp.Status)
+		http.Error(w, "failed to create snapshot", http.StatusInternalServerError)
 		return
 	}
 	fmt.Fprintf(w, "Snapshot '%s' created\n", resp.SnapName)
@@ -63,7 +61,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	out, err := syncer.Run()
 	if err != nil {
 		log.Errorw("error syncing snapshot with s3", "error", err)
-		fmt.Fprintln(w, "failed to sync snapshot with s3")
+		http.Error(w, "failed to sync snapshot with s3", http.StatusInternalServerError)
 		return
 	}
 	log.Info(string(out))
