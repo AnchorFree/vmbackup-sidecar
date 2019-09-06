@@ -8,8 +8,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// Cfg stores loggers and port data
-var Cfg config
+var (
+	// Cfg stores loggers and port data
+	Cfg config
+
+	// Execution env type: prod or dev
+	envType = "ENVIRONMENT"
+	envProd bool
+)
 
 type config struct {
 	Logger     *zap.SugaredLogger
@@ -19,7 +25,17 @@ type config struct {
 
 func init() {
 	// Setup logger(s)
-	logger, err := zap.NewProduction()
+	env := os.Getenv(envType)
+	if env == "prod" || env == "production" {
+		envProd = true
+	}
+	var loggerFunc func(opts ...zap.Option) (*zap.Logger, error)
+	if envProd {
+		loggerFunc = zap.NewProduction
+	} else {
+		loggerFunc = zap.NewDevelopment
+	}
+	logger, err := loggerFunc()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
