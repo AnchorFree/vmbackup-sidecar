@@ -15,6 +15,13 @@ import (
 var (
 	log             = cfg.Cfg.Logger
 	envConf, envErr = env.GetConfig()
+
+	// HealthPath specifies endpoint for handling healthchecks.
+	HealthPath = "/health"
+
+	// BackupCreatePath specifies endpoint for creating vmstorage
+	// snapshot and sync it with S3 bucket.
+	BackupCreatePath = "/backup/create"
 )
 
 func init() {

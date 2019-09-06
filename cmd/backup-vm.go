@@ -47,14 +47,16 @@ func main() {
 	// TODO: implement /metrics
 	// http.HandleFunc("/metrics", metricsHandler)
 
-	http.HandleFunc("/health", handlers.HealthcheckHandler)
+	http.HandleFunc(handlers.HealthPath, handlers.HealthcheckHandler)
+	logger.Infof("Registered healthcheck handler at: %s", handlers.HealthPath)
 
 	discardBackupHandler := handlers.DiscardConcRequests(
 		handlers.BackupHandler,
 		"Backup ongoing, discarding request",
 		http.StatusConflict,
 	)
-	http.HandleFunc("/backup/create", discardBackupHandler)
+	http.HandleFunc(handlers.BackupCreatePath, discardBackupHandler)
+	logger.Infof("Registered backup handler at: %s", handlers.BackupCreatePath)
 
 	srv := &http.Server{
 		Addr: listen,
