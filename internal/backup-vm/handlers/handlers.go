@@ -115,3 +115,21 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error in response writing: %#v", err)
 	}
 }
+
+// DiscardConcRequests is HTTP handling middleware that ensures no more than
+// single request is passed concurrently to the given handler f. Other requests
+// are discarded.
+func DiscardConcRequests(f http.HandlerFunc, errMsg string, httpStatusCode int) http.HandlerFunc {
+	// XXX: very important that channel is buffered
+	sema := make(chan struct{}, 1)
+
+	return func(w http.ResponseWriter, req *http.Request) {
+		select {
+		case sema <- struct{}{}:
+			defer func() { <-sema }()
+			f(w, req)
+		default:
+			http.Error(w, errMsg, httpStatusCode)
+		}
+	}
+}

@@ -48,7 +48,13 @@ func main() {
 	// http.HandleFunc("/metrics", metricsHandler)
 
 	http.HandleFunc("/health", handlers.HealthcheckHandler)
-	http.HandleFunc("/backup/create", handlers.BackupHandler)
+
+	discardBackupHandler := handlers.DiscardConcRequests(
+		handlers.BackupHandler,
+		"Backup ongoing, discarding request",
+		http.StatusConflict,
+	)
+	http.HandleFunc("/backup/create", discardBackupHandler)
 
 	srv := &http.Server{
 		Addr: listen,
