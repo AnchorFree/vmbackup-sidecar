@@ -23,7 +23,7 @@ type Config struct {
 	// S3 bucket name for syncing snapshot
 	BucketName string
 
-	// Correspondes to --storageDataPath flag in VictoriaMetrics setup
+	// Corresponds to --storageDataPath flag in VictoriaMetrics setup
 	DataPath string
 
 	// Pod name of vmstorage component
