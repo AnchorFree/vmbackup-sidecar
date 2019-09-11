@@ -17,10 +17,14 @@ RUN VERSION=$(git describe --always --long) && \
     cd cmd && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s -X main.version=${VERSION} -X main.builddt=${DT} -X main.semver=${SEMVER} -X main.branch=${BRANCH}" -o /build/${PROJECT_NAME}
 
+
 ## awscli + app
 ##
-FROM python:3.7-alpine3.10
-RUN pip install --no-cache-dir awscli==1.16.232
+
+# awscli has bug syncing empty files under Python3, thus using Python2
+# https://github.com/aws/aws-cli/issues/2403
+FROM python:2.7-alpine3.10
+RUN pip install --no-cache-dir awscli==1.16.236
 
 # vmbackup app
 ENV BINARY vmbackup-sidecar
