@@ -79,6 +79,13 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	delete := true
 	follow := true
 
+	// Persist empty directories by filling them with .keep file
+	if _, err := s3sync.KeepEmptyDirs(snapPath); err != nil {
+		log.Errorw("error filling empty directories", "error", err)
+		http.Error(w, "failed to persist empty directories", http.StatusInternalServerError)
+		return
+	}
+
 	fmt.Fprintf(w, "Sync snapshot %s into %s\n", createResp.SnapName, bucketPath)
 	syncer := s3sync.New(bucketPath, snapPath, delete, follow)
 	out, err := syncer.Run()

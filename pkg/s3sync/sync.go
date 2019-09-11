@@ -42,10 +42,24 @@ func (sc SyncCmd) ComposeCmd() string {
 	return strings.TrimSpace(cmd)
 }
 
+// Run executes composed `aws s3 sync` command.
 func (sc SyncCmd) Run() ([]byte, error) {
+	return runCmd(sc.ComposeCmd())
+}
+
+// KeepEmptyDirs fills empty directories with .keep file.
+// This is useful for syncing empty directories in S3.
+// S3 is an object storage which does not have a concept
+// of the empty directory.
+// https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+func KeepEmptyDirs(path string) ([]byte, error) {
+	cmd := fmt.Sprintf("find %s -type d -empty -exec touch {}/.keep \\;", path)
+	return runCmd(cmd)
+}
+
+func runCmd(cmd string) ([]byte, error) {
 	var out []byte
 
-	cmd := sc.ComposeCmd()
 	tokens, err := shlex.Split(cmd)
 	if err != nil {
 		return out, err
