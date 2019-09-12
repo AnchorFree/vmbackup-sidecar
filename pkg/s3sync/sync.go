@@ -53,7 +53,7 @@ func (sc SyncCmd) Run() ([]byte, error) {
 // of the empty directory.
 // https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
 func KeepEmptyDirs(path string) ([]byte, error) {
-	cmd := fmt.Sprintf("find %s -type d -empty -exec touch {}/.keep \\;", path)
+	cmd := fmt.Sprintf("find %s -follow -type d -empty -exec touch {}/.keep \\;", path)
 	return runCmd(cmd)
 }
 

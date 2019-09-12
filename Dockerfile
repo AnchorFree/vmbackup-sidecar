@@ -26,6 +26,9 @@ RUN VERSION=$(git describe --always --long) && \
 FROM python:2.7-alpine3.10
 RUN pip install --no-cache-dir awscli==1.16.236
 
+# Required for full-featured `find` util
+RUN apk add findutils
+
 # vmbackup app
 ENV BINARY vmbackup-sidecar
 EXPOSE 8488
