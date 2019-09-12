@@ -80,6 +80,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	follow := true
 
 	// Persist empty directories by filling them with .keep file
+	log.Infof("filling empty dirs in %s with .keep files", snapPath)
 	if _, err := s3sync.KeepEmptyDirs(snapPath); err != nil {
 		log.Errorw("error filling empty directories", "error", err)
 		http.Error(w, "failed to persist empty directories", http.StatusInternalServerError)
@@ -94,7 +95,9 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to sync snapshot with s3", http.StatusInternalServerError)
 		return
 	}
-	log.Info(string(out))
+	strOut := string(out)
+	log.Info(strOut)
+	fmt.Fprintf(w, strOut)
 	fmt.Fprintln(w, "Sync completed")
 
 	// Remove all snapshots
