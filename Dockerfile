@@ -24,7 +24,7 @@ RUN VERSION=$(git describe --always --long) && \
 # awscli has bug syncing empty files under Python3, thus using Python2
 # https://github.com/aws/aws-cli/issues/2403
 FROM python:2.7-alpine3.10
-RUN pip install --no-cache-dir awscli==1.16.236
+RUN pip install --no-cache-dir awscli==1.16.238
 
 # Required for full-featured `find` util
 RUN apk add findutils
