@@ -18,9 +18,10 @@ var (
 )
 
 type config struct {
-	Logger     *zap.SugaredLogger
-	FastLogger *zap.Logger
-	Port       int
+	Logger         *zap.SugaredLogger
+	FastLogger     *zap.Logger
+	Port           int
+	OnlyShowErrors bool
 }
 
 func init() {
@@ -49,6 +50,9 @@ func init() {
 	// Args from cmd
 	port := flag.Int("port", 8488, "Port to listen")
 	help := flag.Bool("help", false, "Show usage")
+
+	dscr := "Only errors and warnings are displayed. All other output is suppressed"
+	onlyErrors := flag.Bool("only-show-errors", false, dscr)
 	flag.Parse()
 
 	if *help {
@@ -57,4 +61,5 @@ func init() {
 	}
 
 	Cfg.Port = *port
+	Cfg.OnlyShowErrors = *onlyErrors
 }

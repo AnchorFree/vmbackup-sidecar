@@ -89,6 +89,9 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "Sync snapshot %s into %s\n", createResp.SnapName, bucketPath)
 	syncer := s3sync.New(bucketPath, snapPath, delete, follow)
+	if cfg.Cfg.OnlyShowErrors {
+		syncer.OnlyShowErrors = true
+	}
 	out, err := syncer.Run()
 	if err != nil {
 		log.Errorw("error syncing snapshot with s3", "error", err)

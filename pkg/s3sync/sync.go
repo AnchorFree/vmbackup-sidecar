@@ -13,6 +13,7 @@ type SyncCmd struct {
 	LocalPath      string
 	Delete         bool
 	FollowSymlinks bool
+	OnlyShowErrors bool
 }
 
 func New(bucketName, localPath string, delete, follow bool) *SyncCmd {
@@ -38,7 +39,13 @@ func (sc SyncCmd) ComposeCmd() string {
 	if sc.FollowSymlinks {
 		follow = "--follow-symlinks"
 	}
-	cmd := fmt.Sprintf("%s %s %s %s %s", base, src, dst, delete, follow)
+
+	onlyErrors := ""
+	if sc.OnlyShowErrors {
+		onlyErrors = "--only-show-errors"
+	}
+
+	cmd := fmt.Sprintf("%s %s %s %s %s %s", base, src, dst, delete, follow, onlyErrors)
 	return strings.TrimSpace(cmd)
 }
 
