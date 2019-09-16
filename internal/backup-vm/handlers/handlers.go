@@ -43,6 +43,8 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	pattern := "/backup/create"
 	log.Infof("Call to %s", pattern)
 
+	// Handle non-GET requests
+	//
 	if r.Method != "GET" {
 		w.Header().Set("Content-Type", "application/json")
 		errMsg := fmt.Sprintf("Incorrect HTTP method for uri [%s] and method [%s], allowed: [GET]", pattern, r.Method)
@@ -53,6 +55,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create snapshot
+	//
 	fmt.Fprintln(w, "Creating snapshot")
 	client := vmstorage.New(envConf.Host, envConf.Port, "http")
 	createResp, err := client.CreateSnapshot()
@@ -74,6 +77,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Snapshot '%s' created\n", createResp.SnapName)
 
 	// Sync snapshot with S3
+	//
 	snapPath := path.Join(envConf.DataPath, "snapshots", createResp.SnapName)
 	bucketPath := path.Join(envConf.BucketName, envConf.PodName)
 	delete := true
@@ -87,6 +91,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Actual sync
 	{
 		msg := fmt.Sprintf("Syncing snapshot %s into %s", createResp.SnapName, bucketPath)
 		log.Info(msg)
@@ -96,6 +101,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	if cfg.Cfg.OnlyShowErrors {
 		syncer.OnlyShowErrors = true
 	}
+	log.Infof("Running: %s", syncer.ComposeCmd())
 	out, err := syncer.Run()
 	if err != nil {
 		log.Errorw("error syncing snapshot with s3", "error", err)
@@ -105,10 +111,19 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 	strOut := string(out)
 	log.Info(strOut)
 	fmt.Fprintf(w, strOut)
-	fmt.Fprintln(w, "Sync completed")
+	{
+		msg := "Sync completed"
+		log.Info(msg)
+		fmt.Fprintln(w, msg)
+	}
 
 	// Remove all snapshots
-	fmt.Fprintln(w, "Removing all snapshots")
+	//
+	{
+		msg := "Removing all snapshots"
+		log.Info(msg)
+		fmt.Fprintln(w, msg)
+	}
 	delAllResp, err := client.DeleteAllSnaps()
 	if err != nil {
 		errMsg := "error removing vmstorage snapshots"
@@ -124,6 +139,11 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorw(errMsg, "status", delAllResp.Status)
 		http.Error(w, "failed to remove snapshots", http.StatusInternalServerError)
 		return
+	}
+	{
+		msg := "Snapshots removed successfully"
+		log.Info(msg)
+		fmt.Fprintln(w, msg)
 	}
 }
 
