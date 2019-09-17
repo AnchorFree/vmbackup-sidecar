@@ -46,6 +46,8 @@ Command-line options:
 Usage of ./backup-vm:
   -help
     Show usage
+  -only-show-errors
+    Only errors and warnings are displayed. All other output is suppressed
   -port int
     Port to listen (default 8488)
 ```
