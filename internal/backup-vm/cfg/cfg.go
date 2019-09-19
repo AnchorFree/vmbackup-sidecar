@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -26,16 +27,26 @@ type config struct {
 
 func init() {
 	// Setup logger(s)
+	//
 	env := os.Getenv(envType)
 	if env == "prod" || env == "production" {
 		envProd = true
 	}
+
+	// Set logger time format to ISO8601
+	prodConf := zap.NewProductionConfig()
+	prodConf.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	newProd := func(opts ...zap.Option) (*zap.Logger, error) {
+		return prodConf.Build(opts...)
+	}
+
 	var loggerFunc func(opts ...zap.Option) (*zap.Logger, error)
 	if envProd {
-		loggerFunc = zap.NewProduction
+		loggerFunc = newProd
 	} else {
 		loggerFunc = zap.NewDevelopment
 	}
+
 	logger, err := loggerFunc()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -48,6 +59,7 @@ func init() {
 	Cfg.FastLogger = logger
 
 	// Args from cmd
+	//
 	port := flag.Int("port", 8488, "Port to listen")
 	help := flag.Bool("help", false, "Show usage")
 
