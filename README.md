@@ -26,6 +26,13 @@ Provides a sidecar backup service for [VictoriaMetrics](https://github.com/Victo
 ```
 
 
+## Docker image
+
+```
+$ docker pull anchorfree/vmbackup-sidecar:latest
+```
+
+
 ## Configuration
 
 Parameters for communicating with `vmstorage` instance and credentials for accessing S3 bucket are stored in environment variables:
