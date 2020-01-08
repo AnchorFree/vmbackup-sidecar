@@ -2,6 +2,11 @@
 [![Go Report](https://goreportcard.com/badge/github.com/AnchorFree/vmbackup-sidecar)](https://goreportcard.com/report/github.com/AnchorFree/vmbackup-sidecar)
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/AnchorFree/vmbackup-sidecar?include_prereleases)
 
+**Warning:** use this tool _only_ with VictoriaMetrics version < 1.29.0.
+Starting from
+[v1.29.0](https://github.com/VictoriaMetrics/VictoriaMetrics/releases/tag/v1.29.0) VictoriaMetrics added
+native `vmbackup` and `vmrestore` tools for fast backups on GCS and S3.
+
 vmbackup-sidecar
 ----------------
 
